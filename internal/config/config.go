@@ -60,7 +60,7 @@ func LoadConfig() (Config, error) {
 	return Config {
 		Server: ServerConfig{
 			LogLevel: logLevel,
-			Host: getEnv("HOST", "localhost"),
+			Host: getEnv("HOST", ""),
 			Port: getEnv("PORT", "1116"),
 		},
 		Worker: WorkerConfig{Concurrency: 3},
