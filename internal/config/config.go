@@ -45,19 +45,19 @@ func LoadConfig() (Config, error) {
 	switch strings.ToLower(logLevel) {
 		case "debug", "info", "warn", "error":
 		default:
-			return Config{}, fmt.Errorf("Invalid value for LOG_LEVEL: %q", logLevel)
+			return Config{}, fmt.Errorf("invalid LOG_LEVEL: %q", logLevel)
 	}
 
 	readTimeoutStr := getEnv("READ_TIMEOUT", "10")
 	readTimeout, err := strconv.Atoi(readTimeoutStr)
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid value for READ_TIMEOUT: %q", readTimeoutStr)
+		return Config{}, fmt.Errorf("invalid READ_TIMEOUT: %q", readTimeoutStr)
 	}
 
 	writeTimeoutStr := getEnv("WRITE_TIMEOUT", "10")
 	writeTimeout, err := strconv.Atoi(writeTimeoutStr)
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid value for WRITE_TIMEOUT: %q", writeTimeoutStr)
+		return Config{}, fmt.Errorf("invalid WRITE_TIMEOUT: %q", writeTimeoutStr)
 	}
 
 
@@ -92,7 +92,7 @@ func LoadConfig() (Config, error) {
 func getRequiredEnv(key string) (string, error) {
 	value, ok := os.LookupEnv(key)
 	if !ok || value == "" {
-		return "", fmt.Errorf("%s is required", key)
+		return "", fmt.Errorf("required environment variable %q is not set", key)
 	}
 	return value, nil
 }
