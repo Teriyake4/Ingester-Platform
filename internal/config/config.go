@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +19,8 @@ type ServerConfig struct {
 	LogLevel string
 	Host string
 	Port string
+	ReadTimeout int
+	WriteTimeout int
 }
 
 type WorkerConfig struct {
@@ -42,8 +45,22 @@ func LoadConfig() (Config, error) {
 	switch strings.ToLower(logLevel) {
 		case "debug", "info", "warn", "error":
 		default:
-			return Config{}, fmt.Errorf("invalid log level %q", logLevel)
+			return Config{}, fmt.Errorf("Invalid value for LOG_LEVEL: %q", logLevel)
 	}
+
+	readTimeoutStr := getEnv("READ_TIMEOUT", "10")
+	readTimeout, err := strconv.Atoi(readTimeoutStr)
+	if err != nil {
+		return Config{}, fmt.Errorf("Invalid value for READ_TIMEOUT: %q", readTimeoutStr)
+	}
+
+	writeTimeoutStr := getEnv("WRITE_TIMEOUT", "10")
+	writeTimeout, err := strconv.Atoi(writeTimeoutStr)
+	if err != nil {
+		return Config{}, fmt.Errorf("Invalid value for WRITE_TIMEOUT: %q", writeTimeoutStr)
+	}
+
+
 	postgresURL, err := getRequiredEnv("POSTGRES_URL")
 	if err != nil {
 		return Config{}, err
@@ -62,6 +79,8 @@ func LoadConfig() (Config, error) {
 			LogLevel: logLevel,
 			Host: getEnv("HOST", ""),
 			Port: getEnv("PORT", "1116"),
+			ReadTimeout: readTimeout,
+			WriteTimeout: writeTimeout,
 		},
 		Worker: WorkerConfig{Concurrency: 3},
 		Postgres: PostgresConfig{URL: postgresURL},
