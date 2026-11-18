@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+	"ticker-ingester/internal/server"
 	"ticker-ingester/internal/config"
-	"ticker-ingester/internal/util"
+	"ticker-ingester/internal/observability"
 )
 
 func main() {
@@ -18,5 +22,21 @@ func main() {
 
 	logger, err := util.NewLogger(cfg.Server)
 
-	logger.Info("Starting Server")
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	logger.Info("Creating server")
+
+	router := server.NewRoutes()
+	handler := server.Chain(
+		server.RecoverPanic(),
+		server.RequestID(),
+		server.Logging(),
+	)(router)
+	srv := server.NewServer(cfg.Server, logger, handler)
+
+	if err := server.Run(ctx, srv); nil != err {
+		logger.Error("Server failed", "error", err)
+		os.Exit(1)
+	}
 }
